@@ -4,7 +4,6 @@ package restserver
 import (
     "net/http"
     "strings"
-    "log"
 )
 
 // Variable global que almacena los recursos disponibles
@@ -66,19 +65,13 @@ func manejarPeticion(p http.ResponseWriter, req *http.Request) {
     }
     var id = req.URL.Path[finalRecurso + 1:]
 
-    log.Println(nombreRecurso)
-
     // Inicializa el Recurso Solicitado
     recurso, valido := recursos[nombreRecurso]
-
-
 
     // Comprobar que el nombre de recurso requerido sea valido
     if !valido {
         SinImplementar(p)
     }
-
-    //log.Println("Valido")
     
     // Enrutador de Requerimientos por Method
     switch req.Method {
@@ -88,7 +81,6 @@ func manejarPeticion(p http.ResponseWriter, req *http.Request) {
             if recGet, valido := recurso.(listado); valido {
                 recGet.Listar(p, req)
             } else {
-                log.Println("No encuentra")
                 SinImplementar(p)
             }
         } else {
@@ -134,13 +126,41 @@ func manejarPeticion(p http.ResponseWriter, req *http.Request) {
 
 // Define las funciones usadas para registar recursos, administrar respuestas e implementaciones
 
-// Devuelve el error 404 cuando no se ha implementado el recurso
-func SinImplementar(p http.ResponseWriter) {
-    http.Error(p, "404 Not Found", http.StatusNotFound)
-}
-
 // Agrega un recurso
-func registrarRecurso (nombre string, rec interface{}) {
+func RegistrarRecurso(nombre string, rec interface{}) {
    recursos[nombre] = rec
    http.Handle("/"+nombre+"/", http.HandlerFunc(manejarPeticion))
+}
+
+// Funcion que mustra el error cuando un requerimiento no es valido
+func RequerimientoInvalido(w http.ResponseWriter, mensaje string) {
+    w.WriteHeader(http.StatusBadRequest)
+    w.Write ([]byte(mensaje))
+}
+
+// Funcion que devuelve el codigo creado cuando el metodo POST es correcto
+func RecursoCreado(w http.ResponseWriter, url string) {
+    w.Header().Set("Location", url)
+    http.Error(w, "201 Created", http.StatusCreated)
+}
+
+// Function que devuelve el mensaje cuando un item no es encontrado
+func NoEncontrado(w http.ResponseWriter) {
+    http.Error(w, "404 Not Found", http.StatusNotFound )
+}
+
+// Funcion que devuelve el mensaje cuando se ha actualizado correctamente un recurso
+func RecursoActualizado(w http.ResponseWriter, url string) {
+    w.Header().Set("Location", url)
+    http.Error(w, "200 OK", http.StatusOK)
+}
+
+// Funcion que devuelve el mensaje cuando no se tiene nada que devolver
+func SinContenido(w http.ResponseWriter) {
+    http.Error(w, "204 No Content", http.StatusNoContent)
+}
+
+// Funcion que devuelve el mensaje cuando un recurso o verbo no ha sido implementado
+func SinImplementar(w http.ResponseWriter) {
+    http.Error(w, "501 Not Implemented", http.StatusNotImplemented)
 }

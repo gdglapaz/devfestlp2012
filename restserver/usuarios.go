@@ -1,11 +1,5 @@
 package restserver
 
-import(
-  "net/http"
-  "log"
-  "fmt"
-)
-
 // Definicion del Objeto Usuario
 type Usuario struct {
 	Id int
@@ -56,14 +50,6 @@ func (u *UsuarioCollection) ListarTodos() []*Usuario {
 }
 
 // Crear el Metodo Eliminar al Objeto UsuarioCollection
-func (u *UsuarioCollection) Eliminar(id int) {
+func (u *UsuarioCollection) EliminarId(id int) {
 	delete(u.usuarios, id);
-}
-
-
-func (u *UsuarioCollection) Listar(p http.ResponseWriter, req *http.Request) {
-	log.Println("LLego Aca")
-	for _, usuario := range u.ListarTodos() {
-		fmt.Fprintf(p, "<a href=\"%v\">%v</a>%v<br />", usuario.Id, usuario.Id, usuario.Nick)
-	}
 }
